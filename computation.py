@@ -17,7 +17,7 @@ t_hash = 0.1697992
 t_exp = 0.8186955000
 t_add = 0.0000881400
 t_mul = 0.0003266900
-max_number = 500
+max_number = 1000
 
 step = 100
 col_index = range(100, max_number + 1, step)
@@ -95,12 +95,12 @@ def efdpa_costs(n, t_func):
 
 colors = ['#0072BD', '#D95318', '#EDB120', '#7E2F8E', '#77AC30', '#4DBEEE', '#A2142F']
 styles = {
-    'VPMDA': {'linestyle': '-', 'marker': 'o', 'color': '#0072BD'},
-    'FPDA': {'linestyle': '-', 'marker': 'x', 'color': '#D95318'},
-    'FTMA': {'linestyle': '-', 'marker': 'v', 'color': '#EDB120'},
+    'VPMDA [16]': {'linestyle': '-', 'marker': 'o', 'color': '#0072BD'},
+    'FPDA [27]': {'linestyle': '-', 'marker': 'x', 'color': '#D95318'},
+    'FTMA [31]': {'linestyle': '-', 'marker': 'v', 'color': '#EDB120'},
     'EFDPA': {'linestyle': '-', 'marker': '*', 'color': '#7E2F8E'},
 }
-scheme_list = ['VPMDA', 'FPDA', 'FTMA', 'EFDPA']
+scheme_list = ['VPMDA [16]', 'FPDA [27]', 'FTMA [31]', 'EFDPA']
 result = {}
 for scheme in scheme_list:
     total_costs = []
@@ -109,31 +109,34 @@ for scheme in scheme_list:
         t_func = t_func_dict[t]
 
         cur_cost = 0
-        if scheme == 'VPMDA':
-            cur_cost = vpmda_costs(n)['total']
-        elif scheme == 'FPDA':
-            cur_cost = fpda_costs(n, t_func)['total']
-        elif scheme == 'FTMA':
-            cur_cost = ftma_costs(n, t)['total']
+        if scheme == 'VPMDA [16]':
+            cur_cost = vpmda_costs(n)['dec']
+        elif scheme == 'FPDA [27]':
+            cur_cost = fpda_costs(n, t_func)['dec']
+        elif scheme == 'FTMA [31]':
+            cur_cost = ftma_costs(n, t)['dec']
         elif scheme == 'EFDPA':
-            cur_cost = efdpa_costs(n, t_func)['total']
+            cur_cost = efdpa_costs(n, t_func)['dec']
         total_costs.append(cur_cost)
     result[scheme] = total_costs
 
+
 df = pd.DataFrame(result, index=col_index)
 fig, ax = plt.subplots()
-
+print(df)
 # 修改画图部分，使用不同线形和标记
 for scheme in scheme_list:
     ax.plot(df[scheme], linestyle=styles[scheme]['linestyle'],
             color=styles[scheme]['color'], marker=styles[scheme]['marker'], label=scheme)
 
 ax.set_xlabel('No. of SMs')
-ax.set_ylabel('Computation overhead (ms)')
+ax.set_ylabel('Computation overh'
+              ''
+              'ead (ms)')
 ax.set_xticks(col_index)
 ax.set_xticklabels([str(x) for x in col_index])
-ax.set_ylim(np.min(df['VPMDA']) * 0.9, np.max(df['FPDA']) * 1.1)
-# ax.set_yscale('log')  # 修改为正确的对数刻度设置
+ax.set_ylim(np.min(df['EFDPA']) * 0.8, np.max(df['FPDA [27]']) * 1.2)
+ax.set_yscale('log')  # 修改为正确的对数刻度设置
 ax.legend()
 plt.show()
-# plt.savefig('Computation_overhead_schemes.pdf')
+# plt.savefig('./result/computation_overhead_normal.pdf')

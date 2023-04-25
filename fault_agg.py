@@ -10,7 +10,7 @@ t_hash = 0.1697992
 t_exp = 0.8186955000
 t_add = 0.0000881400
 t_mul = 0.0003266900
-max_number = 1000
+max_number = 500
 t = int(max_number / 2 + 1)
 t_func_dict = {
     51: 0.0743419000,
@@ -63,41 +63,47 @@ def efdpa_fault_costs(n, t_func, l):
 colors = ['#0072BD', '#D95318', '#EDB120', '#7E2F8E', '#77AC30', '#4DBEEE', '#A2142F']
 styles = {
     # 'VPMDA': {'linestyle': '-', 'marker': 'o', 'color': '#7E2F8E'},
-    'FPDA': {'linestyle': '-', 'marker': 'x', 'color': '#D95318'},
-    'FTMA': {'linestyle': '-', 'marker': '^', 'color': '#EDB120'},
+    'FPDA [27]': {'linestyle': '-', 'marker': 'x', 'color': '#D95318'},
+    'FTMA [31]': {'linestyle': '-', 'marker': '^', 'color': '#EDB120'},
     'EFDPA': {'linestyle': '-', 'marker': '*', 'color': '#0072BD'},
 }
-scheme_list = ['FPDA', 'FTMA', 'EFDPA']
+scheme_list = ['FPDA [27]', 'FTMA [31]', 'EFDPA']
 result = {}
 ratio_range = [5, 10, 15, 20, 25, 30, 35, 40]
 
-for scheme in scheme_list:
-    total_costs = []
-    for fault in ratio_range:
-        cur_cost = 0
-        t_func = t_func_dict[t]
-        l = int(max_number * fault)
+for max_number in range(100,1000 + 1,100):
+    t = int(max_number / 2 + 1)
 
-        if scheme == 'FPDA':
-            cur_cost = fpda_fault_costs(max_number, t, t_func_dict[t], l)['total']
-        elif scheme == 'FTMA':
-            cur_cost = ftma_fault_costs(max_number, t_func, l)['total']
-        elif scheme == 'EFDPA':
-            cur_cost = efdpa_fault_costs(max_number, t_func, l)['total']
-        total_costs.append(cur_cost)
-    result[scheme] = total_costs
-df = pd.DataFrame(result, index=ratio_range)
-fig, ax = plt.subplots()
+    for scheme in scheme_list:
+        total_costs = []
+        for fault in ratio_range:
+            cur_cost = 0
+            t_func = t_func_dict[t]
+            l = int(max_number * fault / 100)
 
-# 修改画图部分，使用不同线形和标记
-for scheme in scheme_list:
-    ax.plot(df[scheme], linestyle=styles[scheme]['linestyle'],
-            color=styles[scheme]['color'], marker=styles[scheme]['marker'], label=scheme)
-ax.set_xlabel('Proportion of Faulty SMs')
-ax.set_ylabel('Computation overhead (ms)')
-ax.set_xticks(ratio_range)
-ax.set_xticklabels(['{:2d}%'.format(x) for x in ratio_range])
-#ax.set_yscale('log')  # 修改为正确的对数刻度设置
-ax.legend()
-# plt.savefig('./proportion_of_faulty_sm.pdf')
-plt.show()
+            if scheme == 'FPDA [27]':
+                cur_cost = fpda_fault_costs(max_number, t, t_func, l)['dec'] + fpda_fault_costs(max_number, t, t_func, l)[
+                    'agg']
+            elif scheme == 'FTMA [31]':
+                cur_cost = ftma_fault_costs(max_number, t_func, l)['dec'] + ftma_fault_costs(max_number, t_func, l)['agg']
+            elif scheme == 'EFDPA':
+                cur_cost = efdpa_fault_costs(max_number, t_func, l)['dec'] + efdpa_fault_costs(max_number, t_func, l)['agg']
+            total_costs.append(cur_cost)
+        result[scheme] = total_costs
+    df = pd.DataFrame(result, index=ratio_range)
+    print(df
+          )
+# fig, ax = plt.subplots()
+
+# # 修改画图部分，使用不同线形和标记
+# for scheme in scheme_list:
+#     ax.plot(df[scheme], linestyle=styles[scheme]['linestyle'],
+#             color=styles[scheme]['color'], marker=styles[scheme]['marker'], label=scheme)
+# ax.set_xlabel('Proportion of Faulty SMs')
+# ax.set_ylabel('Computation overhead (ms)')
+# ax.set_xticks(ratio_range)
+# ax.set_xticklabels(['{:2d}%'.format(x) for x in ratio_range])
+# # ax.set_yscale('log')  # 修改为正确的对数刻度设置
+# ax.legend()
+# # plt.savefig('./result/proportion_of_faulty.pdf')
+# plt.show()
